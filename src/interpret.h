@@ -5,25 +5,26 @@
 
 class Interpretator {
 private:
-    lexem_t f_lexems; // field_lexems
+    lexems_t f_lexems; // field_lexems
     number_t use_bin_op(const Lexem& lhs, const Lexem& op, const Lexem& rhs) {
         auto lhs_v = std::get<number_t>(lhs.data);
         auto rhs_v = std::get<number_t>(rhs.data);
         switch (std::get<operator_t>(op.data)) {
-        case operator_t::op_plus:
+        case operator_t::op_add:
             return lhs_v + rhs_v;
-        case operator_t::op_minus:
+        case operator_t::op_sub:
             return lhs_v - rhs_v;
         case operator_t::op_mul:
             return lhs_v * rhs_v;
         case operator_t::op_div:
             return lhs_v / rhs_v;
+        case operator_t::op_exp:
+            return std::pow(lhs_v, rhs_v);
         }
         throw 0;
     }
 
-    number_t calculate_op(lexem_t& lexems,
-        operator_t op = operator_t::op_mul) {
+    number_t calculate_op(lexems_t& lexems, operator_t op = operator_t::op_mul) {
         auto has_op_pred = [op](const auto& lex) -> bool {
             if (lex.type != LexemType::op) return false;
             return std::get<operator_t>(lex.data) == op;
@@ -49,10 +50,10 @@ private:
         return 0;
     }
 
-    number_t calculate_recursion(lexem_t& lexems) {
+    number_t calculate_recursion(lexems_t& lexems) {
         for (auto& el : lexems) { // calculate next expressions
             if (el.type == LexemType::expression) {
-                shared_lexem_t lexems_ptr = std::get<shared_lexem_t>(el.data);
+                shared_lexems_t lexems_ptr = std::get<shared_lexems_t>(el.data);
                 auto result = calculate_recursion(*lexems_ptr);
                 // if lexems_ptr has expression in there then we got maybe deep recursion in previous line
                 el.type = LexemType::number;
@@ -60,25 +61,24 @@ private:
             }
         }
 
-        /*
+        number_t result{};
 
-                ...I'm gonna make brace processing soon...
-
-        */
-
-        if (auto r1 = calculate_op(lexems, operator_t::op_mul); r1 != 0) return r1;
-        if (auto r2 = calculate_op(lexems, operator_t::op_div); r2 != 0) return r2;
-        if (auto r3 = calculate_op(lexems, operator_t::op_plus); r3 != 0) return r3;
-        if (auto r4 = calculate_op(lexems, operator_t::op_minus); r4 != 0) return r4;
-        throw std::runtime_error{ "something went wrong..." };
+        for (auto op : usable_operators) {
+            result = calculate_op(lexems, op);
+            if (result != 0)
+                return result;
+        }
     }
 
 public:
-    Interpretator(const lexem_t& lexems) : f_lexems(lexems) {}
-    Interpretator(lexem_t&& lexems) : f_lexems(std::move(lexems)) {}
+    Interpretator(const lexems_t& lexems) : f_lexems(lexems) {}
+    Interpretator(lexems_t&& lexems) : f_lexems(std::move(lexems)) {}
     number_t calculate() {
-        lexem_t& lexems = f_lexems;
+        lexems_t& lexems = f_lexems;
 
+        return calculate_recursion(lexems);
+
+        /*
         for (auto& el : lexems) { // calculate next expressions
             if (el.type == LexemType::expression) {
                 shared_lexem_t lexems_ptr = std::get<shared_lexem_t>(el.data);
@@ -89,16 +89,9 @@ public:
             }
         }
 
-        /*
-
-                ...I'm gonna make brace processing soon...
-
-        */
-
         if (auto r1 = calculate_op(lexems, operator_t::op_mul); r1 != 0) return r1;
         if (auto r2 = calculate_op(lexems, operator_t::op_div); r2 != 0) return r2;
-        if (auto r3 = calculate_op(lexems, operator_t::op_plus); r3 != 0) return r3;
-        if (auto r4 = calculate_op(lexems, operator_t::op_minus); r4 != 0) return r4;
-        throw std::runtime_error{ "something went wrong..." };
+        if (auto r3 = calculate_op(lexems, operator_t::op_add); r3 != 0) return r3;
+        return calculate_op(lexems, operator_t::op_sub);*/
     }
 };

@@ -5,29 +5,23 @@
 #include "types.h"
 
 namespace utils {
-inline bool is_number(char c) { return (c >= '0' && c <= '9'); }
+inline bool is_number(char c) { 
+    return (c >= '0' && c <= '9') || number_trait::is_symbol(c);
+}
 
 inline bool is_operator(char c) {
-  using enum operator_type;
-  return (c == static_cast<char>(op_plus)) ||
-         (c == static_cast<char>(op_minus)) ||
-         (c == static_cast<char>(op_mul)) || (c == static_cast<char>(op_div));
+    for (auto el : usable_operators) {
+        if (c == static_cast<char>(el))
+            return true;
+    }
+    return false;
 }
 
 inline operator_type cast_operator(char c) {
   using enum operator_type;
   if (!is_operator(c))
     throw std::runtime_error{"Trying cast invalid char to operator_type"};
-  switch (c) {
-    case '+':
-      return op_plus;
-    case '-':
-      return op_minus;
-    case '*':
-      return op_mul;
-    case '/':
-      return op_div;
-  }
+  return static_cast<operator_type>(c);
 }
 
 inline bool is_brace(char c) {

@@ -27,11 +27,11 @@ private:
         if (type == LexemType::number) {
             for (size_t i = pos; i < str.size(); i++) {
                 if (!utils::is_number(str[i])) {
-                    ret.data = string_to_number_t(str.substr(pos, i - pos));
+                    ret.data = number_trait::from_string(str.substr(pos, i - pos));
                     return std::pair(ret, i - 1);
                 }
             }
-            ret.data = string_to_number_t(str.substr(pos, str.size() - pos + 1));
+            ret.data = number_trait::from_string(str.substr(pos, str.size() - pos + 1));
             return std::pair(ret, str.size() - 1);
         }
         if (type == LexemType::brace) {
@@ -55,8 +55,8 @@ private:
         throw std::runtime_error{ "Unkown error in parse_lexer_from()" };
     }
 
-    lexem_t make_lexical_analysis(const std::string& str) {
-        lexem_t ret;
+    lexems_t make_lexical_analysis(const std::string& str) {
+        lexems_t ret;
         for (size_t i = 0; i < str.size(); i++) {
             LexemType type{};
             if (utils::is_number(str[i])) {
@@ -73,7 +73,7 @@ private:
             if (lexem.type == LexemType::expression_string) {
                 if (!std::holds_alternative<expression_t>(lexem.data))
                     throw std::runtime_error{ "Wrong lexial analysis" };
-                auto sptr = std::make_shared<lexem_t>(
+                auto sptr = std::make_shared<lexems_t>(
                     make_lexical_analysis(std::get<expression_t>(lexem.data)));
                 lexem.type = LexemType::expression;
                 lexem.data = sptr;
@@ -85,7 +85,7 @@ private:
     }
 
 public:
-    lexem_t start(std::string str) {
+    lexems_t start(std::string str) {
         clear_string(str);
         return make_lexical_analysis(str);
     }

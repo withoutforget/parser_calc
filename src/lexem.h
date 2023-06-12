@@ -6,7 +6,7 @@
 #include "utils.h"
 
 struct Lexem {
-    std::variant<number_t, operator_t, brace_t, shared_lexem_t, expression_t>
+    std::variant<number_t, operator_t, brace_t, shared_lexems_t, expression_t>
         data;
     LexemType type;
     friend std::ostream& operator<<(std::ostream& os, const Lexem& rhs);
@@ -31,7 +31,7 @@ inline std::ostream& operator<<(std::ostream& os, const Lexem& rhs) {
         if (is_expr)
             os << std::get<expression_t>(rhs.data);
         else {
-            decltype(auto) ptr = std::get<shared_lexem_t>(rhs.data);
+            decltype(auto) ptr = std::get<shared_lexems_t>(rhs.data);
             for (auto& el : *ptr) {
                 os << el << ' ';
             }
